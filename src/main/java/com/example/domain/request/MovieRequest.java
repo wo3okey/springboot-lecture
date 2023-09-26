@@ -8,5 +8,4 @@ import lombok.RequiredArgsConstructor;
 public class MovieRequest {
     private final String name;
     private final int productionYear;
-    private final Long directorId;
 }
