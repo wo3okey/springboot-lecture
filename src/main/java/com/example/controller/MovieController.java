@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -22,10 +21,8 @@ public class MovieController {
     private final MovieService movieService;
 
     @GetMapping("/api/v1/movies")
-    public Response<List<MovieResponse>> getMovies(
-            @RequestParam(value = "overYear", required = false) Integer overYear
-    ) {
-        return Response.of(movieService.getMovies(overYear));
+    public Response<List<MovieResponse>> getMovies() {
+        return Response.of(movieService.getMovies());
     }
 
     @GetMapping("/api/v1/movies/{movieId}")
