@@ -17,7 +17,7 @@ public class MovieServiceTest {
     @DisplayName("영화 단건 조회 테스트")
     public void getMovieTest() {
         // given
-        int movieId = 12323;
+        int movieId = 1; // db에 없으면 에러남
 
         // when
         MovieResponse movieResponse = movieService.getMovie(movieId);
