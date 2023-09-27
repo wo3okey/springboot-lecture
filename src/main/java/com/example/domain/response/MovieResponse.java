@@ -10,11 +10,11 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 public class MovieResponse {
-    private final long id;
+    private final Long id;
 
     private final String name;
 
-    private final int productionYear;
+    private final Integer productionYear;
 
     private final String directorName;
 
