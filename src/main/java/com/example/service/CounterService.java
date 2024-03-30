@@ -4,18 +4,12 @@ import com.example.domain.entity.Counter;
 import com.example.repository.CounterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class CounterService {
     private final CounterRepository counterRepository;
-
-    @Transactional
-    public void save(Counter counter) {
-        counterRepository.save(counter);
-    }
 
     @Transactional
     public void init(int count) {
@@ -31,11 +25,11 @@ public class CounterService {
 
     @Transactional
     public void decreasePessimistic() {
-        Counter counter = counterRepository.findFirstElseThrowForUpdate();
+        Counter counter = counterRepository.findFirstElseThrowPessimistic();
         counter.decCount();
     }
 
-    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    @Transactional
     public synchronized void decreaseSync() {
         Counter counter = counterRepository.findFirstElseThrow();
         counter.decCount();

@@ -14,7 +14,7 @@ public interface CounterRepository extends JpaRepository<Counter, Long> {
         return this.findById(FIRST).orElseThrow();
     }
 
-    default Counter findFirstElseThrowForUpdate() {
+    default Counter findFirstElseThrowPessimistic() {
         return this.findByIdForUpdate(FIRST).orElseThrow();
     }
 

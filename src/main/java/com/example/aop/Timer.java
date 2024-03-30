@@ -1,4 +1,4 @@
-package com.example.common;
+package com.example.aop;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -21,7 +21,7 @@ public @interface Timer {
 @Aspect
 @Component
 class TimerImpl {
-    @Pointcut("@annotation(com.example.common.Timer)")
+    @Pointcut("@annotation(com.example.aop.Timer)")
     private void timer() {
     }
 
