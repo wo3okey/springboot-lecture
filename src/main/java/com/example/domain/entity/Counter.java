@@ -23,9 +23,9 @@ public class Counter {
     @Column(name = "count")
     protected int count;
 
-    @Version
-    @Column(name = "version")
-    private int version;
+//    @Version
+//    @Column(name = "version")
+//    private int version;
 
     public void decCount() {
         count--;

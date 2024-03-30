@@ -1,5 +1,6 @@
 package com.example;
 
+import com.example.service.CounterRedisService;
 import com.example.service.CounterService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +16,10 @@ import java.util.stream.IntStream;
 @SpringBootTest
 public class CounterServiceTest {
     @Autowired
-    CounterService counterService;
+    private CounterService counterService;
+
+    @Autowired
+    private CounterRedisService counterRedisService;
 
     StopWatch stopWatch = new StopWatch();
 
@@ -62,7 +66,7 @@ public class CounterServiceTest {
         });
     }
 
-    @Test
+    @Test // 실행전 version 주석 해제
     public void 낙관적락() {
         AtomicInteger failCount = new AtomicInteger();
 
@@ -75,7 +79,7 @@ public class CounterServiceTest {
         });
     }
 
-    @Test
+    @Test // 실행전 version 주석 해제
     public void 낙관적락_retry() {
         int maxRetryCount = 5;
         AtomicInteger failCount = new AtomicInteger();
@@ -100,6 +104,20 @@ public class CounterServiceTest {
     public void 비관적락() {
         IntStream.range(0, 100).parallel().forEach(i -> {
             counterService.decreasePessimistic();
+        });
+    }
+
+    @Test
+    public void redis_스핀락() {
+        IntStream.range(0, 100).parallel().forEach(i -> {
+            counterRedisService.redisSpinLock();
+        });
+    }
+
+    @Test
+    public void redisson_분산락() {
+        IntStream.range(0, 100).parallel().forEach(i -> {
+            counterRedisService.redissonLock();
         });
     }
 }
