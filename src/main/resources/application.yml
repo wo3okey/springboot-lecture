@@ -7,9 +7,6 @@ spring:
     username:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
-  redis:
-    host: 0.0.0.0 # docker redis
-    port: 6379
 
   jpa:
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
