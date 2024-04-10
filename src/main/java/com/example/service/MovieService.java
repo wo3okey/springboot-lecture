@@ -48,6 +48,7 @@ public class MovieService {
         movie.setName("변경1");
         movie.setName("변경2");
         movie.setName("변경3");
+        movie.setName("변경 테스트");
     }
 
     @Transactional
