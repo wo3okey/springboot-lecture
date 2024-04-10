@@ -20,6 +20,11 @@ import java.util.List;
 public class MovieController {
     private final MovieService movieService;
 
+    @GetMapping("/api/v1/test")
+    public Response<String> test() {
+        return Response.of("test");
+    }
+
     @GetMapping("/api/v1/movies")
     public Response<List<MovieResponse>> getMovies() {
         return Response.of(movieService.getMovies());
