@@ -1,5 +1,5 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:905418251008:task-definition/ecs-task-lecture:1",
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:905418251008:task-definition/ecs-task-lecture:4",
     "containerDefinitions": [
         {
             "name": "springboot-lecture",
@@ -15,20 +15,20 @@
                 }
             ],
             "essential": true,
-            "environment": [
-                {
-                    "name": "SPRING_DATASOURCE_USERNAME",
-                    "value": "root"
-                },
-                {
-                    "name": "SPRING_DATASOURCE_PASSWORD",
-                    "value": "#an14921492#"
-                }
-            ],
+            "environment": [],
             "environmentFiles": [],
             "mountPoints": [],
             "volumesFrom": [],
-            "ulimits": [],
+            "secrets": [
+                {
+                    "name": "SPRING_DATASOURCE_PASSWORD",
+                    "valueFrom": "arn:aws:ssm:ap-northeast-2:905418251008:parameter/springlecture/rds/password"
+                },
+                {
+                    "name": "SPRING_DATASOURCE_USERNAME",
+                    "valueFrom": "arn:aws:ssm:ap-northeast-2:905418251008:parameter/springlecture/rds/username"
+                }
+            ],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
@@ -45,7 +45,7 @@
     "family": "ecs-task-lecture",
     "executionRoleArn": "arn:aws:iam::905418251008:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
-    "revision": 1,
+    "revision": 4,
     "volumes": [],
     "status": "ACTIVE",
     "requiresAttributes": [
@@ -63,6 +63,9 @@
         },
         {
             "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "ecs.capability.secrets.ssm.environment-variables"
         },
         {
             "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
@@ -88,7 +91,7 @@
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
-    "registeredAt": "2024-04-09T23:37:11.293Z",
+    "registeredAt": "2024-04-10T11:42:20.125Z",
     "registeredBy": "arn:aws:iam::905418251008:root",
     "tags": []
 }

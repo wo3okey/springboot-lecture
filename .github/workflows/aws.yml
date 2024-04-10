@@ -9,7 +9,7 @@ env:
   ECR_REPOSITORY: springboot-lecture
   ECS_SERVICE: ecs-service
   ECS_CLUSTER: ecs-cluster
-  ECS_TASK_DEFINITION: ecs-task-lecture-revision1.json
+  ECS_TASK_DEFINITION: ecs-task-lecture-revision4.json
   CONTAINER_NAME: springboot-lecture
 
 jobs:
