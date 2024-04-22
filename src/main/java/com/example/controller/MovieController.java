@@ -22,7 +22,7 @@ public class MovieController {
 
     @GetMapping("/api/v1/test")
     public Response<String> test() {
-        return Response.of("test");
+        return Response.of("testss");
     }
 
     @GetMapping("/api/v1/movies")
