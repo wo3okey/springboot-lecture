@@ -1,5 +1,6 @@
 package com.example.domain.request;
 
+import com.example.domain.enums.MemberRole;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -8,5 +9,5 @@ import lombok.RequiredArgsConstructor;
 public class UserRequest {
     private final String username;
     private final String password;
-    private final String role;
+    private final MemberRole role;
 }
