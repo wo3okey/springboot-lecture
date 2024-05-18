@@ -1,6 +1,10 @@
 server:
   port: 8080
 
+jwt:
+  secret:
+    key: 9fe5393ef4c4609612e4abe98c1f02f3a05a76b4c1c859b93f386a17a7d84386410f844dec83c2abbcfa56bd01403a2eb7de012caf5070976d527b23a11207f3
+
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/boot_test?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&serverTimezone=Asia/Seoul

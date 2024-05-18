@@ -1,6 +1,8 @@
 package com.example.common.config;
 
+import com.example.common.config.jwt.JwtFilter;
 import com.example.common.config.jwt.JwtLoginFilter;
+import com.example.common.config.jwt.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    private final JwtUtils jwtUtils;
     private final AuthenticationConfiguration configuration;
 
     @Bean
@@ -45,7 +48,8 @@ public class SecurityConfig {
         );
 
         // 필터 관리
-        http.addFilterAt(new JwtLoginFilter(authenticationManager(configuration)), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JwtFilter(jwtUtils), JwtLoginFilter.class);
+        http.addFilterAt(new JwtLoginFilter(jwtUtils, authenticationManager(configuration)), UsernamePasswordAuthenticationFilter.class);
 
         // 세션 설정
         http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
