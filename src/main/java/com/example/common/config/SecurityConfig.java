@@ -28,7 +28,7 @@ public class SecurityConfig {
                         auth.antMatchers("/api/v1/user/join", "/login").permitAll()
                                 .antMatchers("/admin").hasRole("ADMIN")
                                 .antMatchers("/manager").access("hasRole('ADMIN') or hasRole('MANAGER')")
-                                .anyRequest().authenticated()
+                                .anyRequest().permitAll()
                 )
                 .build();
     }
