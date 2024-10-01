@@ -44,6 +44,6 @@ public class BaseTest {
 
         // then
         assertEquals(4, sum);
-        System.out.println("테스트 완료7");
+        System.out.println("테스트 완료8");
     }
 }
