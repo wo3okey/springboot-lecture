@@ -49,7 +49,7 @@ public class MovieService {
         movie.setName("변경2");
         movie.setName("변경3");
         movie.setName("변경 테스트");
-        movie.setName("변경 테스트2");
+        movie.setName("변경 테스트221123123");
     }
 
     @Transactional
