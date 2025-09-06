@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class LogService {
@@ -14,6 +16,6 @@ public class LogService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveLog() {
-        logRepository.save(new Log());
+        logRepository.save(new Log(LocalDateTime.now()));
     }
 }

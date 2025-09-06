@@ -17,25 +17,32 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final LogService logService;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public MovieResponse getMovie(long movieId) {
         Movie movie = movieRepository.findById(movieId).orElseThrow();
         return MovieResponse.of(movie);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
+    public Movie getMovieEntity(long movieId) {
+        return movieRepository.findById(movieId).orElseThrow();
+    }
+
+    @Transactional(readOnly = true)
     public List<MovieResponse> getMovies() {
         List<Movie> movies = movieRepository.findAll();
 
-        // fetch join
-        // List<Movie> movies = movieRepository.findAllJpqlFetch();
-
-        // jpa query filter
-        // List<Movie> movies = movieRepository.findByProductionYear(2020);
         return movies.stream().map(MovieResponse::of).toList();
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(readOnly = true)
+    public List<MovieResponse> getMoviesMultiFetchError() {
+        List<Movie> movies = movieRepository.findAllMultiFetchError();
+
+        return movies.stream().map(MovieResponse::of).toList();
+    }
+
+    @Transactional
     public void saveMovie(MovieRequest movieRequest) {
         Movie movie1 = new Movie(movieRequest.getName(), movieRequest.getProductionYear());
         movieRepository.save(movie1);
@@ -45,11 +52,9 @@ public class MovieService {
     @Transactional
     public void updateMovie(long movieId, MovieRequest movieRequest) {
         Movie movie = movieRepository.findById(movieId).orElseThrow();
-        movie.setName("변경1");
-        movie.setName("변경2");
-        movie.setName("변경3");
-        movie.setName("변경 테스트");
-        movie.setName("변경 테스트2");
+        movie.updateName(movieRequest.getName());
+        movie.updateName("변경2");
+        movie.updateName("변경3");
     }
 
     @Transactional

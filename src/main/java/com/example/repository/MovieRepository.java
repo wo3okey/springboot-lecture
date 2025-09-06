@@ -13,5 +13,6 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     List<Movie> findByProductionYear(int productionYear);
 
     // multi fetch error 발생
-    // @Query("SELECT distinct m FROM Movie m LEFT JOIN FETCH m.actors a LEFT JOIN FETCH m.investor i")
+     @Query("SELECT distinct m FROM Movie m LEFT JOIN FETCH m.actors a LEFT JOIN FETCH m.investors i")
+     List<Movie> findAllMultiFetchError();
 }

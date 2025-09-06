@@ -1,9 +1,9 @@
 package com.example.domain.entity;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,13 +14,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.BatchSize;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "movie")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,32 +37,24 @@ public class Movie {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "director_id")
     private Director director;
 
-    @OneToMany(
-            mappedBy = "movie",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id")
     private List<Actor> actors;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id")
+    private List<Investor> investors;
 
     public Movie(String name, int productionYear) {
         this.name = name;
         this.productionYear = productionYear;
     }
 
-    public void setName(String name) {
+    public void updateName(String name) {
         this.name = name;
-    }
-
-    public void setDirector(Director director) {
-        this.director = director;
-    }
-
-    public void setActors(List<Actor> actors) {
-        this.actors = actors;
     }
 }

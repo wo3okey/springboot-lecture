@@ -1,5 +1,6 @@
 package com.example.domain.entity;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,7 +16,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "actor")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Actor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,8 +24,4 @@ public class Actor {
 
     @Column(name = "name")
     private String name;
-
-    @ManyToOne
-    @JoinColumn(name = "movie_id")
-    private Movie movie;
 }

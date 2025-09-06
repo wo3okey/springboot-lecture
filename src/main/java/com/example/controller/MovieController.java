@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.common.Response;
+import com.example.domain.entity.Movie;
 import com.example.domain.request.MovieRequest;
 import com.example.domain.response.MovieResponse;
 import com.example.service.MovieService;
@@ -20,14 +21,14 @@ import java.util.List;
 public class MovieController {
     private final MovieService movieService;
 
-    @GetMapping("/api/v1/test")
-    public Response<String> test() {
-        return Response.of("testss");
-    }
-
     @GetMapping("/api/v1/movies")
     public Response<List<MovieResponse>> getMovies() {
         return Response.of(movieService.getMovies());
+    }
+
+    @GetMapping("/api/v1/movies/multi-fetch-error")
+    public Response<List<MovieResponse>> getMoviesMultiFetchError() {
+        return Response.of(movieService.getMoviesMultiFetchError());
     }
 
     @GetMapping("/api/v1/movies/{movieId}")
@@ -35,6 +36,17 @@ public class MovieController {
             @PathVariable(value = "movieId") long movieId
     ) {
         return Response.of(movieService.getMovie(movieId));
+    }
+
+    // required - spring.jpa.open-in-view: true
+    @GetMapping("/api/v1/movies/{movieId}/osiv-error")
+    public Response<MovieResponse> getMovieEntity(
+            @PathVariable(value = "movieId") long movieId
+    ) {
+        Movie movie = movieService.getMovieEntity(movieId);
+        System.out.println(movie.getDirector());
+        System.out.println(movie.getActors());
+        return Response.of(MovieResponse.of(movie));
     }
 
     @PostMapping("/api/v1/movies")
