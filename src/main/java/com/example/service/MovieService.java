@@ -5,8 +5,9 @@ import com.example.domain.request.MovieRequest;
 import com.example.domain.response.MovieResponse;
 import com.example.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -16,6 +17,8 @@ import java.util.List;
 public class MovieService {
     private final MovieRepository movieRepository;
     private final LogService logService;
+
+    private final Logger logger = LoggerFactory.getLogger(MovieService.class);
 
     @Transactional(readOnly = true)
     public MovieResponse getMovie(long movieId) {
