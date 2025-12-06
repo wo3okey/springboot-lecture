@@ -290,10 +290,20 @@ public void 영화단건_저장_테스트() {
 <type>(<scope>): <subject>
 ```
 
+**Scope 작성 규칙**:
+1. **Jira 티켓 연결**: 작업과 관련된 Jira 티켓이 있을 경우 티켓 번호를 scope에 작성
+   - 예: `feat(WP-6): 영화 검색 기능 추가`
+   - 예: `refec(WP-10): MovieService 리팩토링`
+
+2. **Domain 기반**: 관련 Jira 티켓이 없을 경우 도메인명을 scope에 작성
+   - 예: `feat(movie): 영화 검색 기능 추가`
+   - 예: `fix(jpa): N+1 문제 해결`
+   - 예: `imp(code-quality): Logger 적용 및 입력 검증 강화`
+
 **예시**:
-- `imp(code-quality): Logger 적용 및 입력 검증 강화`
-- `feat(movie): 영화 검색 기능 추가`
-- `fix(jpa): N+1 문제 해결`
+- `refec(WP-6): MovieService 클린 코드 리팩토링 및 예외 처리 개선` (Jira 티켓)
+- `feat(movie): 영화 검색 기능 추가` (도메인)
+- `fix(jpa): N+1 문제 해결` (도메인)
 
 ### Pull Request 작업 플로우
 
@@ -383,6 +393,49 @@ gh pr view <PR번호>
 ```bash
 gh pr merge <PR번호>
 ```
+
+---
+
+## Jira 티켓 관리 규칙
+
+### 프로젝트 정보
+- **Jira 프로젝트**: wookey-personal
+- **프로젝트 키**: WP
+- **Jira URL**: https://wookey.atlassian.net
+
+### 티켓 생성 규칙
+- 모든 Spring Boot Lecture 프로젝트 관련 작업은 WP 프로젝트에서 관리
+- 티켓 생성 시 자동으로 담당자 할당: 안형욱 (Account ID: 5a42591e3083d835dde9c5b5)
+- 이슈 타입: 작업, 버그, 스토리, 에픽, 하위 작업 중 선택
+
+### 티켓 명명 규칙
+- **형식**: `[Spring Boot Lecture] <작업 내용>`
+- **예시**:
+  - `[Spring Boot Lecture] 프로젝트 초기 설정 및 환경 구성`
+  - `[Spring Boot Lecture] JPA N+1 문제 해결`
+  - `[Spring Boot Lecture] API 엔드포인트 추가`
+
+### 티켓 설명 템플릿
+```markdown
+## 목적
+작업의 목적 및 배경 설명
+
+## 작업 내용
+- [ ] 작업 항목 1
+- [ ] 작업 항목 2
+- [ ] 작업 항목 3
+
+## 기술 스택
+관련 기술 스택 명시
+
+## 기대 결과
+작업 완료 후 예상되는 결과
+```
+
+### 티켓 상태 관리
+- **해야 할 일**: 작업 시작 전
+- **진행 중**: 작업 진행 중
+- **완료**: 작업 완료
 
 ---
 
