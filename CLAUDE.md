@@ -265,6 +265,127 @@ public void 영화단건_저장_테스트() {
 
 ---
 
+## Git & Pull Request 규칙
+
+### 브랜치 전략
+- **master**: 메인 브랜치 (직접 푸시 금지)
+- **feature 브랜치**: `imp/YYMMDD` 또는 `feat/YYMMDD` 또는 `fix/YYMMDD` 형식
+
+### 브랜치 명명 규칙
+**형식**: `<type>/YYMMDD`
+
+**Type 종류**:
+- `feat/`: 새로운 기능 추가
+- `imp/`: 기존 기능 개선
+- `fix/`: 버그 수정
+- `refactor/`: 리팩토링
+- `chore/`: 빌드, 설정, 의존성
+- `test/`: 테스트 코드 추가/수정
+
+**예시**: `imp/251206`, `feat/251207`, `fix/251208`
+
+### 커밋 메시지 형식
+**제목만 작성** (body, footer 제외):
+```
+<type>(<scope>): <subject>
+```
+
+**예시**:
+- `imp(code-quality): Logger 적용 및 입력 검증 강화`
+- `feat(movie): 영화 검색 기능 추가`
+- `fix(jpa): N+1 문제 해결`
+
+### Pull Request 작업 플로우
+
+#### 1. 브랜치 생성
+```bash
+# 현재 날짜로 브랜치 생성
+git checkout -b imp/251206
+```
+
+#### 2. 변경 사항 스테이징 및 커밋
+```bash
+# 변경된 파일 스테이징
+git add <files>
+
+# 커밋 (제목만)
+git commit -m "imp(code-quality): Logger 적용 및 입력 검증 강화"
+```
+
+#### 3. 원격 브랜치에 푸시
+```bash
+git push -u origin imp/251206
+```
+
+#### 4. GitHub Pull Request 생성
+```bash
+# gh CLI 사용 (인증 필요 시: gh auth login)
+gh pr create --title "제목" --body "$(cat <<'EOF'
+## Summary
+- 변경 사항 요약
+
+## Changes
+- 상세 변경 내용
+
+## Test plan
+- [ ] 테스트 항목 1
+- [ ] 테스트 항목 2
+EOF
+)"
+```
+
+### Pull Request 템플릿
+
+```markdown
+## Summary
+- 주요 변경 사항 요약 (3-5줄)
+
+## Changes
+- 파일별 또는 기능별 상세 변경 내용
+- 코드 위치 명시 (파일명:라인 번호)
+
+## Test plan
+- [ ] 빌드 성공 확인
+- [ ] 테스트 통과 확인
+- [ ] 기능 동작 확인
+```
+
+### 주의사항
+- ❌ master 브랜치 직접 푸시 금지
+- ❌ PR 본문에 자동 생성 문구 추가 금지 (예: "Generated with Claude Code")
+- ✅ 커밋 메시지는 제목만 작성 (한 줄)
+- ✅ PR 생성 전 시니어 멘토 훅 검증 통과 확인
+- ✅ 의미 있는 커밋 메시지 작성
+
+### gh CLI 명령어
+
+#### 인증
+```bash
+gh auth login
+```
+
+#### PR 생성
+```bash
+gh pr create --title "제목" --body "본문"
+```
+
+#### PR 목록 확인
+```bash
+gh pr list
+```
+
+#### PR 상세 확인
+```bash
+gh pr view <PR번호>
+```
+
+#### PR 머지
+```bash
+gh pr merge <PR번호>
+```
+
+---
+
 ## 마지막 업데이트
 - **날짜**: 2025-12-06
 - **버전**: 0.0.1-SNAPSHOT
