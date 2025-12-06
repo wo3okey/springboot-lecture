@@ -5,7 +5,10 @@ import com.example.domain.entity.Movie;
 import com.example.domain.request.MovieRequest;
 import com.example.domain.response.MovieResponse;
 import com.example.service.MovieService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MovieController {
     private final MovieService movieService;
+    private final Logger logger = LoggerFactory.getLogger(MovieController.class);
 
     @GetMapping("/api/v1/movies")
     public Response<List<MovieResponse>> getMovies() {
@@ -44,26 +48,27 @@ public class MovieController {
             @PathVariable(value = "movieId") long movieId
     ) {
         Movie movie = movieService.getMovieEntity(movieId);
-        System.out.println(movie.getDirector());
-        System.out.println(movie.getActors());
+        logger.info("Director: {}", movie.getDirector());
+        logger.info("Actors: {}", movie.getActors());
         return Response.of(MovieResponse.of(movie));
     }
 
     @PostMapping("/api/v1/movies")
-    public void saveMovie(@RequestBody MovieRequest movieRequest) {
+    public void saveMovie(@Valid @RequestBody MovieRequest movieRequest) {
         movieService.saveMovie(movieRequest);
     }
 
     @PutMapping("/api/v1/movies/{movieId}")
     public void updateMovie(
             @PathVariable(value = "movieId") long movieId,
-            @RequestBody MovieRequest movieRequest
+            @Valid @RequestBody MovieRequest movieRequest
     ) {
         movieService.updateMovie(movieId, movieRequest);
     }
 
     @DeleteMapping("/api/v1/movies/{movieId}")
-    public void deleteMovie(@PathVariable(value = "movieId") long movieId) {
-        movieService.removeMovie(movieId);
+    public Response<Void> deleteMovie(@PathVariable(value = "movieId") long movieId) {
+        movieService.deleteMovie(movieId);
+        return Response.success();
     }
 }

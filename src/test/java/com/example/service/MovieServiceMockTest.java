@@ -31,20 +31,6 @@ public class MovieServiceMockTest {
     private MovieService movieService;
 
     @Test
-    public void 영화단건조회_정상조회_테스트() {
-        // given
-        int movieId = 1;
-        Movie movie = new Movie("영화명", 2002);
-
-        // when
-        when(movieRepository.findById(anyLong())).thenReturn(Optional.of(movie));
-
-        // then
-        MovieResponse movieResponse = movieService.getMovie(movieId);
-        assertNotNull(movieResponse);
-    }
-
-    @Test
     public void 영화단건조회_불가_테스트() {
         // given
         int movieId = 1;

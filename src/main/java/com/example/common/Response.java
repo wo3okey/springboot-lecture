@@ -13,4 +13,8 @@ public class Response<T> {
     public static <T> Response<T> of(T data) {
         return new Response<>(data);
     }
+
+    public static Response<Void> success() {
+        return new Response<>(null);
+    }
 }

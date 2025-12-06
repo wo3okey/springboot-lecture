@@ -50,6 +50,7 @@ public class MovieService {
         Movie movie1 = new Movie(movieRequest.getName(), movieRequest.getProductionYear());
         movieRepository.save(movie1);
         logService.saveLog();
+        logger.info("Successfully saved movie: {} (Year: {})", movieRequest.getName(), movieRequest.getProductionYear());
     }
 
     @Transactional
@@ -58,11 +59,16 @@ public class MovieService {
         movie.updateName(movieRequest.getName());
         movie.updateName("변경2");
         movie.updateName("변경3");
+
+        logger.info("Updated movie: {}", movie);
     }
 
     @Transactional
-    public void removeMovie(long movieId) {
-        Movie movie = movieRepository.findById(movieId).orElseThrow();
-        movieRepository.delete(movie);
+    public void deleteMovie(long movieId) {
+        if (!movieRepository.existsById(movieId)) {
+            throw new IllegalArgumentException("Movie not found with id: " + movieId);
+        }
+        movieRepository.deleteById(movieId);
+        logger.info("Successfully deleted movie with ID: {}", movieId);
     }
 }
