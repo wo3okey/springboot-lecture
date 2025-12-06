@@ -27,19 +27,19 @@ public class MovieController {
 
     @GetMapping("/api/v1/movies")
     public Response<List<MovieResponse>> getMovies() {
-        return Response.of(movieService.getMovies());
+        return Response.of(movieService.getAllMovies());
     }
 
     @GetMapping("/api/v1/movies/multi-fetch-error")
     public Response<List<MovieResponse>> getMoviesMultiFetchError() {
-        return Response.of(movieService.getMoviesMultiFetchError());
+        return Response.of(movieService.getAllMoviesWithMultiFetchError());
     }
 
     @GetMapping("/api/v1/movies/{movieId}")
     public Response<MovieResponse> getMovie(
             @PathVariable(value = "movieId") long movieId
     ) {
-        return Response.of(movieService.getMovie(movieId));
+        return Response.of(movieService.getMovieById(movieId));
     }
 
     // required - spring.jpa.open-in-view: true
@@ -47,7 +47,7 @@ public class MovieController {
     public Response<MovieResponse> getMovieEntity(
             @PathVariable(value = "movieId") long movieId
     ) {
-        Movie movie = movieService.getMovieEntity(movieId);
+        Movie movie = movieService.getMovieEntityById(movieId);
         logger.info("Director: {}", movie.getDirector());
         logger.info("Actors: {}", movie.getActors());
         return Response.of(MovieResponse.of(movie));
