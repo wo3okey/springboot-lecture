@@ -1,0 +1,79 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\n👔 비서: 안녕하세요, Wookey님! 작업 환경을 준비하고 있습니다...\n' && git status --short 2>/dev/null && echo '\n📊 현재 프로젝트: Spring Boot Lecture\n📅 '$(date '+%Y년 %m월 %d일 %H:%M:%S')'\n💼 오늘도 좋은 하루 되세요!\n'",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '🛡️ 경호원: 파일 수정 작업을 감시 중입니다...'",
+            "timeout": 2
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/security-check.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/senior-mentor.sh",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '🛡️ 경호원: 명령어 실행을 검증 중입니다...'",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '🧹 정리 전문가: 파일 수정 완료 - '$(date '+%H:%M:%S')' | 백업 확인 중...'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '🧹 정리 전문가: 명령어 실행 완료 - '$(date '+%H:%M:%S')' | 결과 검증 완료 ✓'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"📖 정리 전문가: 파일 읽기 완료 - $(date '+%H:%M:%S')\"",
+            "timeout": 3
+          }
+        ]
+      }
+    ]
+  }
+}
