@@ -2,9 +2,12 @@ package com.example.service;
 
 import com.example.domain.entity.Movie;
 import com.example.domain.request.MovieRequest;
+import com.example.kafka.MovieKafkaProducer;
 import com.example.repository.MovieRepository;
+import com.example.repository.OutboxEventRepository;
 import com.example.service.exception.MovieNotFoundException;
 import com.example.service.validator.MovieValidator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,6 +19,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,6 +34,15 @@ public class MovieServiceMockTest {
 
     @Mock
     private MovieValidator movieValidator;
+
+    @Mock
+    private MovieKafkaProducer movieKafkaProducer;
+
+    @Mock
+    private OutboxEventRepository outboxEventRepository;
+
+    @Mock
+    private ObjectMapper objectMapper;
 
     @InjectMocks
     private MovieService movieService;
@@ -49,18 +62,16 @@ public class MovieServiceMockTest {
 
     @Test
     public void 영화단건_저장_테스트() {
-        // given
         MovieRequest request = new MovieRequest("영화명", 2002, 1L);
         Movie movie = new Movie("영화명", 2002);
 
-        // when
         doNothing().when(movieValidator).validateMovieRequest(any(MovieRequest.class));
         when(movieRepository.save(any(Movie.class))).thenReturn(movie);
-        doNothing().when(logService).saveLog();
+        doNothing().when(movieKafkaProducer).publishMovieCreated(any(), anyString());
 
-        // then
         movieService.saveMovie(request);
+
         verify(movieRepository).save(any(Movie.class));
-        verify(logService).saveLog();
+        verify(movieKafkaProducer).publishMovieCreated(any(), anyString());
     }
 }

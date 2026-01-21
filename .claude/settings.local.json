@@ -23,7 +23,9 @@
       "WebSearch",
       "Bash(claude mcp list:*)",
       "Bash(osascript:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.koog.ai)"
     ],
     "deny": [],
     "ask": []
