@@ -1,67 +1,40 @@
-server:
-  port: 8080
-
 spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/boot_test?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&serverTimezone=Asia/Seoul
-    username:
-    password:
-    driver-class-name: com.mysql.cj.jdbc.Driver
+  profiles:
+    active: dev
 
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
-    open-in-view: false # osiv
-    properties:
-      hibernate:
-        show_sql: true
-        format_sql: true
-        default_batch_fetch_size: 20
+    open-in-view: false
 
-  # Kafka 설정 (Multi-Broker 클러스터)
   kafka:
-    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      # 신뢰성 설정
-      acks: all                    # 모든 ISR 복제 후 ACK (데이터 유실 방지)
-      retries: 3                   # 실패 시 재시도 횟수
+      acks: all
+      retries: 3
       properties:
-        # 멱등성 Producer (중복 전송 방지)
         enable.idempotence: true
-        # 순서 보장을 위한 설정 (멱등성 활성화 시 자동 적용)
         max.in.flight.requests.per.connection: 5
     consumer:
       group-id: movie-service-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      # 신뢰성 설정: Auto Commit 비활성화 (수동 커밋 사용)
       enable-auto-commit: false
       properties:
         spring.json.trusted.packages: "com.example"
-        # 무중단 리밸런싱 전략 (Kafka 2.4+)
         partition.assignment.strategy: org.apache.kafka.clients.consumer.CooperativeStickyAssignor
-    # Listener 설정
     listener:
-      ack-mode: manual_immediate   # 수동 커밋 모드
+      ack-mode: manual_immediate
 
-logging:
-  level:
-    org.springframework.orm.jpa: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
-    org.springframework.jdbc.core.JdbcTemplate: DEBUG
-    org.springframework.transaction: DEBUG
-    # Kafka Consumer 리밸런싱 로그
-    org.apache.kafka.clients.consumer: INFO
-    org.springframework.kafka.listener: INFO
+server:
+  port: 8080
 
 management:
   endpoints:
     web:
       exposure:
         include: health, info, prometheus, metrics
-  # Kafka 메트릭 활성화
   metrics:
     tags:
       application: ${spring.application.name:springboot-lecture}
