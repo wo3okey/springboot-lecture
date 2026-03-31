@@ -1,9 +1,17 @@
 package com.example.service;
 
 import com.example.domain.entity.Movie;
+import com.example.domain.entity.OutboxEvent;
+import com.example.domain.event.MovieEvent;
 import com.example.domain.request.MovieRequest;
 import com.example.domain.response.MovieResponse;
+import com.example.kafka.MovieKafkaProducer;
 import com.example.repository.MovieRepository;
+import com.example.repository.OutboxEventRepository;
+import com.example.service.exception.MovieNotFoundException;
+import com.example.service.validator.MovieValidator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,58 +19,279 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * 영화 관리 서비스
+ * <p>
+ * 영화 조회, 생성, 수정, 삭제 등 영화 관련 비즈니스 로직을 처리합니다.
+ * <p>
+ * Single Responsibility Principle: 영화 도메인의 비즈니스 로직에만 집중
+ * Open/Closed Principle: 새로운 기능 추가 시 기존 코드 수정 최소화
+ * Dependency Inversion Principle: Repository 인터페이스에 의존
+ */
 @Service
 @RequiredArgsConstructor
 public class MovieService {
+    private static final Logger logger = LoggerFactory.getLogger(MovieService.class);
+
     private final MovieRepository movieRepository;
     private final LogService logService;
+    private final MovieValidator movieValidator;
+    private final MovieKafkaProducer movieKafkaProducer;
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
 
-    private final Logger logger = LoggerFactory.getLogger(MovieService.class);
-
+    /**
+     * 영화 ID로 영화 정보를 조회합니다.
+     *
+     * @param movieId 조회할 영화 ID
+     * @return 영화 응답 DTO
+     * @throws MovieNotFoundException 영화를 찾을 수 없는 경우
+     */
     @Transactional(readOnly = true)
-    public MovieResponse getMovie(long movieId) {
-        Movie movie = movieRepository.findById(movieId).orElseThrow();
+    public MovieResponse getMovieById(Long movieId) {
+        movieValidator.validateMovieId(movieId);
+
+        Movie movie = getMovieEntityByIdOrThrow(movieId);
+
+        logger.debug("Successfully retrieved movie: {} (ID: {})", movie.getName(), movieId);
         return MovieResponse.of(movie);
     }
 
+    /**
+     * 영화 ID로 영화 엔티티를 조회합니다.
+     *
+     * @param movieId 조회할 영화 ID
+     * @return 영화 엔티티
+     * @throws MovieNotFoundException 영화를 찾을 수 없는 경우
+     */
     @Transactional(readOnly = true)
-    public Movie getMovieEntity(long movieId) {
-        return movieRepository.findById(movieId).orElseThrow();
+    public Movie getMovieEntityById(Long movieId) {
+        movieValidator.validateMovieId(movieId);
+        return getMovieEntityByIdOrThrow(movieId);
     }
 
+    /**
+     * 모든 영화 목록을 조회합니다.
+     *
+     * @return 영화 응답 DTO 리스트
+     */
     @Transactional(readOnly = true)
-    public List<MovieResponse> getMovies() {
+    public List<MovieResponse> getAllMovies() {
         List<Movie> movies = movieRepository.findAll();
 
-        return movies.stream().map(MovieResponse::of).toList();
+        logger.debug("Successfully retrieved {} movies", movies.size());
+        return convertToMovieResponseList(movies);
     }
 
+    /**
+     * N+1 문제를 재현하기 위한 영화 목록 조회 (학습용)
+     * <p>
+     * 이 메서드는 의도적으로 N+1 문제를 발생시켜 학습 목적으로 사용됩니다.
+     *
+     * @return 영화 응답 DTO 리스트
+     */
     @Transactional(readOnly = true)
-    public List<MovieResponse> getMoviesMultiFetchError() {
+    public List<MovieResponse> getAllMoviesWithMultiFetchError() {
         List<Movie> movies = movieRepository.findAllMultiFetchError();
 
-        return movies.stream().map(MovieResponse::of).toList();
+        logger.warn("Retrieved {} movies using multi-fetch error query (N+1 problem demonstration)",
+                movies.size());
+        return convertToMovieResponseList(movies);
     }
 
+    /**
+     * 새로운 영화를 저장합니다.
+     *
+     * @param movieRequest 영화 생성 요청 DTO
+     * @throws IllegalArgumentException 유효하지 않은 요청인 경우
+     */
     @Transactional
     public void saveMovie(MovieRequest movieRequest) {
-        Movie movie1 = new Movie(movieRequest.getName(), movieRequest.getProductionYear());
-        movieRepository.save(movie1);
-        logService.saveLog();
+        movieValidator.validateMovieRequest(movieRequest);
+
+        Movie movie = buildMovieEntity(movieRequest);
+        Movie savedMovie = movieRepository.save(movie);
+
+        // 기존: 동기 호출 (블로킹)
+        // logService.saveLog();
+
+        // 변경: Kafka 이벤트 발행 (비동기)
+        // Consumer에서 logService.saveLog()를 호출하여 로그 저장
+        movieKafkaProducer.publishMovieCreated(savedMovie.getId(), savedMovie.getName());
+
+        logger.info("Successfully created movie: {} (ID: {}, Year: {})",
+                savedMovie.getName(), savedMovie.getId(), movieRequest.getProductionYear());
     }
 
+    /**
+     * 영화 정보를 수정합니다.
+     *
+     * @param movieId      수정할 영화 ID
+     * @param movieRequest 영화 수정 요청 DTO
+     * @throws MovieNotFoundException   영화를 찾을 수 없는 경우
+     * @throws IllegalArgumentException 유효하지 않은 요청인 경우
+     */
     @Transactional
-    public void updateMovie(long movieId, MovieRequest movieRequest) {
-        Movie movie = movieRepository.findById(movieId).orElseThrow();
+    public void updateMovie(Long movieId, MovieRequest movieRequest) {
+        movieValidator.validateMovieId(movieId);
+        movieValidator.validateMovieRequest(movieRequest);
+
+        Movie movie = getMovieEntityByIdOrThrow(movieId);
         movie.updateName(movieRequest.getName());
-        movie.updateName("변경2");
-        movie.updateName("변경3");
+
+        // Kafka 이벤트 발행
+        movieKafkaProducer.publishMovieUpdated(movieId, movie.getName());
+
+        logger.info("Successfully updated movie: {} (ID: {})", movie.getName(), movieId);
     }
 
+    /**
+     * 영화를 삭제합니다.
+     *
+     * @param movieId 삭제할 영화 ID
+     * @throws MovieNotFoundException 영화를 찾을 수 없는 경우
+     */
     @Transactional
-    public void removeMovie(long movieId) {
-        Movie movie = movieRepository.findById(movieId).orElseThrow();
-        movieRepository.delete(movie);
+    public void deleteMovie(Long movieId) {
+        movieValidator.validateMovieId(movieId);
+
+        verifyMovieExists(movieId);
+        movieRepository.deleteById(movieId);
+
+        // Kafka 이벤트 발행
+        movieKafkaProducer.publishMovieDeleted(movieId);
+
+        logger.info("Successfully deleted movie with ID: {}", movieId);
+    }
+
+    // ========================================================================
+    // Transactional Outbox Pattern 메서드들
+    // ========================================================================
+
+    /**
+     * [Outbox Pattern] 새로운 영화를 저장합니다.
+     * <p>
+     * 기존 saveMovie()와 다른 점:
+     * - Kafka 직접 발행 대신 Outbox 테이블에 이벤트 저장
+     * - DB 트랜잭션과 이벤트 저장이 원자적으로 처리됨
+     * - 별도 스케줄러가 Outbox를 폴링하여 Kafka로 발행
+     * <p>
+     * [Dual Write 문제 해결]
+     * - 기존: DB 저장 ✅ → Kafka 발행 ❌ (데이터 불일치 가능)
+     * - Outbox: DB 저장 + Outbox 저장 (같은 트랜잭션) → 스케줄러가 Kafka 발행
+     *
+     * @param movieRequest 영화 생성 요청 DTO
+     */
+    @Transactional
+    public void saveMovieWithOutbox(MovieRequest movieRequest) {
+        movieValidator.validateMovieRequest(movieRequest);
+
+        // 1. 영화 저장
+        Movie movie = buildMovieEntity(movieRequest);
+        Movie savedMovie = movieRepository.save(movie);
+
+        // 2. Outbox 이벤트 저장 (같은 트랜잭션!)
+        MovieEvent event = MovieEvent.created(savedMovie.getId(), savedMovie.getName());
+        saveOutboxEvent("Movie", String.valueOf(savedMovie.getId()), "CREATED", event);
+
+        logger.info("[Outbox] 영화 생성 및 이벤트 저장: {} (ID: {})",
+                savedMovie.getName(), savedMovie.getId());
+    }
+
+    /**
+     * [Outbox Pattern] 영화 정보를 수정합니다.
+     */
+    @Transactional
+    public void updateMovieWithOutbox(Long movieId, MovieRequest movieRequest) {
+        movieValidator.validateMovieId(movieId);
+        movieValidator.validateMovieRequest(movieRequest);
+
+        Movie movie = getMovieEntityByIdOrThrow(movieId);
+        movie.updateName(movieRequest.getName());
+
+        // Outbox 이벤트 저장
+        MovieEvent event = MovieEvent.updated(movieId, movie.getName());
+        saveOutboxEvent("Movie", String.valueOf(movieId), "UPDATED", event);
+
+        logger.info("[Outbox] 영화 수정 및 이벤트 저장: {} (ID: {})", movie.getName(), movieId);
+    }
+
+    /**
+     * [Outbox Pattern] 영화를 삭제합니다.
+     */
+    @Transactional
+    public void deleteMovieWithOutbox(Long movieId) {
+        movieValidator.validateMovieId(movieId);
+
+        verifyMovieExists(movieId);
+        movieRepository.deleteById(movieId);
+
+        // Outbox 이벤트 저장
+        MovieEvent event = MovieEvent.deleted(movieId);
+        saveOutboxEvent("Movie", String.valueOf(movieId), "DELETED", event);
+
+        logger.info("[Outbox] 영화 삭제 및 이벤트 저장: ID={}", movieId);
+    }
+
+    /**
+     * Outbox 이벤트를 저장합니다.
+     */
+    private void saveOutboxEvent(String aggregateType, String aggregateId,
+                                 String eventType, MovieEvent event) {
+        try {
+            String payload = objectMapper.writeValueAsString(event);
+            OutboxEvent outboxEvent = OutboxEvent.of(aggregateType, aggregateId, eventType, payload);
+            outboxEventRepository.save(outboxEvent);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize event to JSON", e);
+        }
+    }
+
+    /**
+     * 영화 ID로 영화 엔티티를 조회하며, 존재하지 않을 경우 예외를 발생시킵니다.
+     *
+     * @param movieId 조회할 영화 ID
+     * @return 조회된 영화 엔티티
+     * @throws MovieNotFoundException 영화를 찾을 수 없는 경우
+     */
+    private Movie getMovieEntityByIdOrThrow(Long movieId) {
+        return movieRepository.findById(movieId)
+                .orElseThrow(() -> new MovieNotFoundException(movieId));
+    }
+
+    /**
+     * 영화가 존재하는지 검증하고, 존재하지 않을 경우 예외를 발생시킵니다.
+     *
+     * @param movieId 검증할 영화 ID
+     * @throws MovieNotFoundException 영화가 존재하지 않는 경우
+     */
+    private void verifyMovieExists(Long movieId) {
+        if (!movieRepository.existsById(movieId)) {
+            throw new MovieNotFoundException(movieId);
+        }
+    }
+
+    /**
+     * MovieRequest로부터 Movie 엔티티를 생성합니다.
+     *
+     * @param movieRequest 영화 생성 요청 DTO
+     * @return 생성된 Movie 엔티티
+     */
+    private Movie buildMovieEntity(MovieRequest movieRequest) {
+        return new Movie(movieRequest.getName(), movieRequest.getProductionYear());
+    }
+
+    /**
+     * Movie 엔티티 리스트를 MovieResponse 리스트로 변환합니다.
+     *
+     * @param movies Movie 엔티티 리스트
+     * @return MovieResponse 리스트
+     */
+    private List<MovieResponse> convertToMovieResponseList(List<Movie> movies) {
+        return movies.stream()
+                .map(MovieResponse::of)
+                .collect(Collectors.toList());
     }
 }

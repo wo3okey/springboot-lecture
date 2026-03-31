@@ -1,0 +1,46 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(CLAUDE_FILE_PATH=\".claude/commands/code-refac.md\" CLAUDE_TOOL_NAME=\"Write\" .claude/hooks/senior-mentor.sh)",
+      "Bash(CLAUDE_FILE_PATH=\"CLAUDE.md\" CLAUDE_TOOL_NAME=\"Write\" .claude/hooks/senior-mentor.sh)",
+      "Bash(CLAUDE_FILE_PATH=\"src/main/java/com/example/common/Response.java\" CLAUDE_TOOL_NAME=\"Write\" .claude/hooks/senior-mentor.sh)",
+      "Bash(CLAUDE_FILE_PATH=\"src/main/java/com/example/controller/MovieController.java\" CLAUDE_TOOL_NAME=\"Write\" .claude/hooks/senior-mentor.sh)",
+      "Bash(CLAUDE_FILE_PATH=\"src/main/java/com/example/service/MovieService.java\" CLAUDE_TOOL_NAME=\"Write\" .claude/hooks/senior-mentor.sh)",
+      "Bash(CLAUDE_FILE_PATH=\"src/test/java/com/example/service/MovieServiceMockTest.java\" CLAUDE_TOOL_NAME=\"Write\" .claude/hooks/senior-mentor.sh)",
+      "Bash(git add:*)",
+      "mcp__atlassian__getVisibleJiraProjects",
+      "mcp__atlassian__createJiraIssue",
+      "mcp__atlassian__editJiraIssue",
+      "Bash(./gradlew clean build:*)",
+      "Bash(./gradlew test:*)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "mcp__atlassian__atlassianUserInfo",
+      "Bash(claude mcp --help:*)",
+      "mcp__atlassian__getTransitionsForJiraIssue",
+      "mcp__context7__get-library-docs",
+      "WebSearch",
+      "Bash(claude mcp list:*)",
+      "Bash(osascript:*)",
+      "Bash(echo:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.koog.ai)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date)] Tool: $CLAUDE_TOOL_NAME\" >> /tmp/claude-posttooluse.log; if command -v osascript >/dev/null 2>&1; then osascript -e \"display notification \\\"Tool: $CLAUDE_TOOL_NAME completed\\\" with title \\\"Claude Code\\\"\" 2>> /tmp/claude-posttooluse.log; elif command -v notify-send >/dev/null 2>&1; then notify-send \"Claude Code\" \"Tool: $CLAUDE_TOOL_NAME completed\"; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

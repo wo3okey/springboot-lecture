@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: jdbc:mysql://prod.server.com:3306/boot_test?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&serverTimezone=Asia/Seoul
+    username:
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+        default_batch_fetch_size: 20
+
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+
+logging:
+  level:
+    org.springframework.orm.jpa: WARN
+    org.hibernate.orm.jdbc.bind: WARN
+    org.springframework.jdbc.core.JdbcTemplate: WARN
+    org.springframework.transaction: WARN
+    org.apache.kafka.clients.consumer: WARN
+    org.springframework.kafka.listener: WARN

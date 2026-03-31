@@ -1,11 +1,14 @@
 package com.example.domain.entity;
 
+import com.example.domain.enums.MovieStatus;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,6 +37,16 @@ public class Movie {
     @Column(name = "production_year")
     private int productionYear;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private MovieStatus status = MovieStatus.PRE_RELEASE;
+
+    @Column(name = "rating")
+    private Double rating;
+
+    @Column(name = "released_at")
+    private LocalDateTime releasedAt;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -56,5 +69,30 @@ public class Movie {
 
     public void updateName(String name) {
         this.name = name;
+    }
+
+    public void release(Double rating) {
+        if (!this.status.canRelease()) {
+            throw new IllegalStateException("Cannot release movie in status: " + this.status);
+        }
+        this.status = MovieStatus.RELEASED;
+        this.rating = rating;
+        this.releasedAt = LocalDateTime.now();
+    }
+
+    public void cancelRelease() {
+        if (this.status != MovieStatus.RELEASED) {
+            throw new IllegalStateException("Cannot cancel non-released movie");
+        }
+        this.status = MovieStatus.PRE_RELEASE;
+        this.rating = null;
+        this.releasedAt = null;
+    }
+
+    public void endShowing() {
+        if (this.status != MovieStatus.RELEASED) {
+            throw new IllegalStateException("Cannot end showing for non-released movie");
+        }
+        this.status = MovieStatus.END_OF_SHOWING;
     }
 }

@@ -5,7 +5,10 @@ import com.example.domain.entity.Movie;
 import com.example.domain.request.MovieRequest;
 import com.example.domain.response.MovieResponse;
 import com.example.service.MovieService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,22 +23,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MovieController {
     private final MovieService movieService;
+    private final Logger logger = LoggerFactory.getLogger(MovieController.class);
 
     @GetMapping("/api/v1/movies")
     public Response<List<MovieResponse>> getMovies() {
-        return Response.of(movieService.getMovies());
+        return Response.of(movieService.getAllMovies());
     }
 
     @GetMapping("/api/v1/movies/multi-fetch-error")
     public Response<List<MovieResponse>> getMoviesMultiFetchError() {
-        return Response.of(movieService.getMoviesMultiFetchError());
+        return Response.of(movieService.getAllMoviesWithMultiFetchError());
     }
 
     @GetMapping("/api/v1/movies/{movieId}")
     public Response<MovieResponse> getMovie(
             @PathVariable(value = "movieId") long movieId
     ) {
-        return Response.of(movieService.getMovie(movieId));
+        return Response.of(movieService.getMovieById(movieId));
     }
 
     // required - spring.jpa.open-in-view: true
@@ -43,27 +47,28 @@ public class MovieController {
     public Response<MovieResponse> getMovieEntity(
             @PathVariable(value = "movieId") long movieId
     ) {
-        Movie movie = movieService.getMovieEntity(movieId);
-        System.out.println(movie.getDirector());
-        System.out.println(movie.getActors());
+        Movie movie = movieService.getMovieEntityById(movieId);
+        logger.info("Director: {}", movie.getDirector());
+        logger.info("Actors: {}", movie.getActors());
         return Response.of(MovieResponse.of(movie));
     }
 
     @PostMapping("/api/v1/movies")
-    public void saveMovie(@RequestBody MovieRequest movieRequest) {
+    public void saveMovie(@Valid @RequestBody MovieRequest movieRequest) {
         movieService.saveMovie(movieRequest);
     }
 
     @PutMapping("/api/v1/movies/{movieId}")
     public void updateMovie(
             @PathVariable(value = "movieId") long movieId,
-            @RequestBody MovieRequest movieRequest
+            @Valid @RequestBody MovieRequest movieRequest
     ) {
         movieService.updateMovie(movieId, movieRequest);
     }
 
     @DeleteMapping("/api/v1/movies/{movieId}")
-    public void deleteMovie(@PathVariable(value = "movieId") long movieId) {
-        movieService.removeMovie(movieId);
+    public Response<Void> deleteMovie(@PathVariable(value = "movieId") long movieId) {
+        movieService.deleteMovie(movieId);
+        return Response.success();
     }
 }

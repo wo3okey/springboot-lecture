@@ -31,6 +31,11 @@ dependencies {
     // db
     runtimeOnly("com.mysql:mysql-connector-j")
 
+    // kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation("ai.koog:koog-agents:LATEST_VERSION")
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 

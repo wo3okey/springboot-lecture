@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface MovieRepository extends JpaRepository<Movie, Long> {
-    @Query("SELECT distinct m FROM Movie m LEFT JOIN FETCH m.actors a")
+    @Query("SELECT distinct m FROM Movie m LEFT JOIN FETCH m.actors a WHERE m.id = 1")
     List<Movie> findAllJpqlFetch();
 
     List<Movie> findByProductionYear(int productionYear);
